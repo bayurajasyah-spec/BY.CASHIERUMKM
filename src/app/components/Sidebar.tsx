@@ -29,8 +29,10 @@ interface SidebarProps {
 }
 
 export function Sidebar({ active, go, open, close, staff, onLogout, onProfile, onLogin }: SidebarProps) {
-  const canDashboard = staff?.role !== "Kasir";
-  const visibleNav = navItems.filter(item => canDashboard || item.page !== "dashboard");
+  const canDashboard = staff?.role !== "Kasir" && staff?.role !== "Kitchen";
+  const visibleNav = staff?.role === "Kitchen"
+    ? [{ page: "kitchen" as Page, label: "Kitchen Display", icon: Utensils }]
+    : navItems.filter(item => canDashboard || item.page !== "dashboard");
   return (
     <>
       {/* Backdrop */}

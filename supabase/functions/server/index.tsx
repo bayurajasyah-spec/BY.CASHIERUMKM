@@ -48,6 +48,20 @@ const defaultSettings = { storeName: "BY.CASHIER UMKM", address: "Jakarta Selata
 const digestPin = async (pin: string) => Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pin)))).map(byte => byte.toString(16).padStart(2, "0")).join("");
 const publicStaff = ({ pinHash, ...staff }: Record<string, unknown>) => staff;
 
+const ensureStaff = async () => {
+  const existing = await kv.get<Record<string, unknown>[]>(staffKey);
+  if (existing?.length) return existing;
+  const defaults = [
+    ["Admin", "Admin", "1234"],
+    ["Manager", "Manager", "1234"],
+    ["Kitchen", "Kitchen", "1234"],
+    ["Kasir", "Kasir", "1234"],
+  ];
+  const seeded = await Promise.all(defaults.map(async ([name, role, pin]) => ({ id: crypto.randomUUID(), name, role, shift: "Pagi · 08.00–16.00", hourlyRate: 0, permissions: ["Kasir POS", "Laporan", "Stok", "KDS"], attendance: "Belum check-in", pinHash: await digestPin(pin) })));
+  await kv.set(staffKey, seeded);
+  return seeded;
+};
+
 app.get("/make-server-df04cfb8/vouchers", async (c) => {
   const vouchers = await kv.get(vouchersKey) ?? [];
   return c.json({ vouchers });
@@ -118,7 +132,7 @@ app.get("/make-server-df04cfb8/notifications", async (c) => {
 });
 
 app.get("/make-server-df04cfb8/staff", async (c) => {
-  const staff = await kv.get<Record<string, unknown>[]>(staffKey) ?? [];
+  const staff = await ensureStaff();
   return c.json({ staff: staff.map(publicStaff) });
 });
 
@@ -133,8 +147,8 @@ app.post("/make-server-df04cfb8/staff", async (c) => {
 
 app.post("/make-server-df04cfb8/staff/login", async (c) => {
   const { name, pin } = await c.req.json<{ name: string; pin: string }>();
-  const staff = await kv.get<Record<string, unknown>[]>(staffKey) ?? [];
-  const pinHash = await digestPin(pin || "");
+  const staff = await ensureStaff();
+  const pinHash = await digestPin(String(pin || ""));
   const found = staff.find(item => String(item.name).toLowerCase() === String(name).trim().toLowerCase() && item.pinHash === pinHash);
   if (!found) return c.json({ error: "Nama atau PIN tidak cocok." }, 401);
   return c.json({ staff: publicStaff(found) });

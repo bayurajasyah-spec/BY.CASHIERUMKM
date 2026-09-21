@@ -8,7 +8,8 @@ export type Page =
   | "tracking"
   | "wallet"
   | "settings"
-  | "profile";
+  | "profile"
+  | "kitchen";
 
 export type Food = {
   id: number;
@@ -74,7 +75,7 @@ export type StaffMessage = {
 
 export type StaffNotification = { id: string; body: string; createdAt: string; read: boolean };
 
-export type StaffRole = "Kasir" | "Supervisor" | "Admin";
+export type StaffRole = "Kasir" | "Supervisor" | "Admin" | "Owner" | "Manager" | "Kitchen";
 export type Staff = {
   id: string;
   name: string;
