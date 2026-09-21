@@ -182,7 +182,7 @@ export default function App() {
     if (!data.staff) throw new Error(data.error || "Nama atau PIN tidak cocok.");
     setCurrentStaff(data.staff);
     if (data.staff.role === "Kasir") setPage("order");
-    else setPage(data.staff.role === "Kitchen" ? "kitchen" as Page : "dashboard");
+    else setPage(data.staff.role === "Kitchen" || data.staff.role === "Kitchen Display" ? "kitchen" as Page : "dashboard");
     showNotice(`Selamat datang, ${data.staff.name}.`);
   };
   const logoutStaff = () => { setCurrentStaff(null); setPage("dashboard"); setSidebarOpen(false); showNotice("Akun staff sudah logout."); };

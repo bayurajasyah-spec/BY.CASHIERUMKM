@@ -75,7 +75,7 @@ export type StaffMessage = {
 
 export type StaffNotification = { id: string; body: string; createdAt: string; read: boolean };
 
-export type StaffRole = "Kasir" | "Supervisor" | "Admin" | "Owner" | "Manager" | "Kitchen";
+export type StaffRole = "Kasir" | "Supervisor" | "SPV" | "Admin" | "Owner" | "Manager" | "Kitchen" | "Kitchen Display";
 export type Staff = {
   id: string;
   name: string;
