@@ -192,7 +192,7 @@ app.post("/make-server-df04cfb8/transactions", async (c) => {
   const draft = await c.req.json();
   if (!draft?.total || !Array.isArray(draft.items) || !draft.items.length) return c.json({ error: "Data transaksi tidak lengkap." }, 400);
   const transactions = await kv.get<any[]>(transactionsKey) ?? [];
-  const transaction = { ...draft, id: crypto.randomUUID(), invoice: `INV-${Date.now().toString().slice(-8)}`, status: "Completed", createdAt: new Date().toISOString() };
+  const transaction = { ...draft, id: crypto.randomUUID(), invoice: `INV-${Date.now().toString().slice(-8)}`, status: "Processing", createdAt: new Date().toISOString() };
   await kv.set(transactionsKey, [transaction, ...transactions]);
   return c.json({ transaction }, 201);
 });
