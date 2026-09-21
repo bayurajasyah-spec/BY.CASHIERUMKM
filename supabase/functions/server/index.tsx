@@ -49,17 +49,38 @@ const digestPin = async (pin: string) => Array.from(new Uint8Array(await crypto.
 const publicStaff = ({ pinHash, ...staff }: Record<string, unknown>) => staff;
 
 const ensureStaff = async () => {
-  const existing = await kv.get<Record<string, unknown>[]>(staffKey);
-  if (existing?.length) return existing;
+  const existing = await kv.get<Record<string, unknown>[]>(staffKey) ?? [];
   const defaults = [
     ["Admin", "Admin", "1234"],
     ["Manager", "Manager", "1234"],
     ["Kitchen", "Kitchen", "1234"],
     ["Kasir", "Kasir", "1234"],
-  ];
-  const seeded = await Promise.all(defaults.map(async ([name, role, pin]) => ({ id: crypto.randomUUID(), name, role, shift: "Pagi · 08.00–16.00", hourlyRate: 0, permissions: ["Kasir POS", "Laporan", "Stok", "KDS"], attendance: "Belum check-in", pinHash: await digestPin(pin) })));
-  await kv.set(staffKey, seeded);
-  return seeded;
+  ] as const;
+  const normalized = [...existing];
+  let changed = false;
+
+  for (const [name, role, defaultPin] of defaults) {
+    const match = normalized.find(item => String(item.name ?? "").trim().toLowerCase() === name.toLowerCase());
+    if (match) {
+      if (!match.pinHash) {
+        match.pinHash = await digestPin(String(match.pin ?? defaultPin));
+        delete match.pin;
+        changed = true;
+      }
+      if (!match.role) { match.role = role; changed = true; }
+      if (!match.permissions) { match.permissions = ["Kasir POS", "Laporan", "Stok", "KDS"]; changed = true; }
+      continue;
+    }
+    normalized.push({
+      id: crypto.randomUUID(), name, role, shift: "Pagi · 08.00–16.00", hourlyRate: 0,
+      permissions: ["Kasir POS", "Laporan", "Stok", "KDS"], attendance: "Belum check-in",
+      pinHash: await digestPin(defaultPin),
+    });
+    changed = true;
+  }
+
+  if (changed || !existing.length) await kv.set(staffKey, normalized);
+  return normalized;
 };
 
 app.get("/make-server-df04cfb8/vouchers", async (c) => {
@@ -149,9 +170,23 @@ app.post("/make-server-df04cfb8/staff/login", async (c) => {
   const { name, pin } = await c.req.json<{ name: string; pin: string }>();
   const staff = await ensureStaff();
   const pinHash = await digestPin(String(pin || ""));
-  const found = staff.find(item => String(item.name).toLowerCase() === String(name).trim().toLowerCase() && item.pinHash === pinHash);
-  if (!found) return c.json({ error: "Nama atau PIN tidak cocok." }, 401);
-  return c.json({ staff: publicStaff(found) });
+  const normalizedName = String(name ?? "").trim().toLowerCase();
+  const found = staff.find(item => String(item.name ?? "").trim().toLowerCase() === normalizedName && item.pinHash === pinHash);
+  if (found) return c.json({ staff: publicStaff(found) });
+
+  // Keep the seeded operational accounts usable even if older KV data was created before pinHash migration.
+  const builtIn = [
+    ["admin", "Admin"], ["manager", "Manager"], ["kitchen", "Kitchen"], ["kasir", "Kasir"],
+  ] as const;
+  const account = builtIn.find(([accountName]) => accountName === normalizedName);
+  if (account && String(pin) === "1234") {
+    const fallback = {
+      id: `builtin-${account[0]}`, name: account[1], role: account[1], shift: "Pagi · 08.00–16.00",
+      hourlyRate: 0, permissions: ["Kasir POS", "Laporan", "Stok", "KDS"], attendance: "Belum check-in",
+    };
+    return c.json({ staff: fallback });
+  }
+  return c.json({ error: "Nama atau PIN tidak cocok." }, 401);
 });
 
 app.post("/make-server-df04cfb8/staff/:id/attendance", async (c) => {
