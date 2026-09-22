@@ -15,6 +15,7 @@ import { TrackingPage } from "./components/pages/TrackingPage";
 import { WalletPage } from "./components/pages/WalletPage";
 import { SettingsPage } from "./components/pages/SettingsPage";
 import { AccountLogin, ProfilePage } from "./components/pages/ProfilePage";
+import { KitchenDisplay } from "./components/pages/KitchenDisplay";
 
 const pageTitles: Partial<Record<Page, string>> = {
   order: "Kasir",
@@ -23,6 +24,7 @@ const pageTitles: Partial<Record<Page, string>> = {
   wallet: "Kas Shift",
   settings: "Pengaturan Kasir",
   profile: "Profil Saya",
+  kitchen: "Kitchen Display",
 };
 
 export default function App() {
@@ -176,6 +178,7 @@ export default function App() {
     <main className="min-h-screen lg:pl-72">
       {page !== "dashboard" && page !== "order" && <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gray-100 bg-white/95 px-5 backdrop-blur lg:px-8"><div className="flex items-center gap-4"><button onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-2xl bg-gray-100 transition hover:bg-gray-200 lg:hidden"><Menu size={20}/></button>{title && <h1 className="font-['Space_Grotesk'] text-2xl font-bold text-[#1c075c]">{title}</h1>}</div><div className="flex items-center gap-3"><button className="grid size-10 place-items-center rounded-2xl bg-gray-50 ring-1 ring-gray-100"><Bell size={18} className="text-gray-600"/></button><button onClick={() => currentStaff ? go("profile") : setLoginOpen(true)} className="grid size-10 place-items-center overflow-hidden rounded-full bg-gradient-to-br from-amber-100 to-rose-300 text-lg">{currentStaff?.photo?<img src={currentStaff.photo} alt="Profil" className="size-full object-cover"/>:"👩"}</button></div></header>}
       {page === "dashboard" && currentStaff?.role !== "Kasir" && <header className="sticky top-0 z-30 flex h-14 items-center justify-between bg-transparent px-5 lg:hidden"><button onClick={() => setSidebarOpen(true)} className="grid size-10 place-items-center rounded-2xl bg-white shadow-sm ring-1 ring-gray-100"><Menu size={18} className="text-gray-600"/></button></header>}
+      {page === "kitchen" && <KitchenDisplay />}
       {page === "dashboard" && <AnalyticsDashboard dishes={products} vouchers={vouchers} banners={banners} messages={messages} notifications={notifications} staff={staff} settings={storeSettings} transactions={transactions} currentStaff={currentStaff} onCreateStaff={createStaff} onAttendance={setAttendance} onSaveSettings={saveStoreSettings} onBroadcast={broadcast} onSendMessage={sendMessage} onUpdateProducts={updateProducts} onCreateVoucher={createVoucher} onCreateBanner={createBanner} onDeleteBanner={deleteBanner} goToCashier={() => go("order")} />}
       {page === "order" && <CashierPOS dishes={visibleDishes} banners={banners} vouchers={vouchers} messages={messages} notifications={notifications} storeSettings={storeSettings} currentStaff={currentStaff} loginStaff={loginStaff} sendMessage={sendMessage} favorites={favorites} cart={cart} toggle={toggleFav} add={addToCart} detail={food => { setSelected(food); go("detail"); }} update={updateCart} clear={() => setCart([])} completed={completeTransaction}/>} 
       {page === "detail" && <DetailPage food={selected} cartQty={cart.find(item => item.food.id === selected.id)?.qty ?? 0} isFav={favorites.includes(selected.id)} onFav={() => toggleFav(selected.id)} onAdd={() => addToCart(selected)} go={go}/>} 

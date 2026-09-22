@@ -1,9 +1,10 @@
-import { Heart, LayoutDashboard, LogOut, PackageCheck, Settings, ShoppingCart, Utensils, WalletCards, X } from "lucide-react";
+import { ChefHat, Heart, LayoutDashboard, LogOut, PackageCheck, Settings, ShoppingCart, Utensils, WalletCards, X } from "lucide-react";
 import { Page, Staff } from "../types";
 
 const navItems = [
   { page: "dashboard" as Page, label: "Dashboard", icon: LayoutDashboard },
   { page: "order" as Page, label: "Kasir", icon: ShoppingCart },
+  { page: "kitchen" as Page, label: "Kitchen Display", icon: ChefHat },
   { page: "favorites" as Page, label: "Sering Dipesan", icon: Heart },
   { page: "history" as Page, label: "Riwayat Transaksi", icon: PackageCheck },
   { page: "wallet" as Page, label: "Kas Shift", icon: WalletCards },
