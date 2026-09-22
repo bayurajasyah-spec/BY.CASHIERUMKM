@@ -96,6 +96,24 @@ export type StoreSettings = {
   paymentMethods: { CASH: boolean; QRIS: boolean; Online: boolean; EDC: boolean; Split: boolean };
 };
 
+export type KitchenOrder = {
+  id: string;
+  invoice: string;
+  items: { name: string; qty: number; note?: string }[];
+  status: "New" | "Preparing" | "Ready" | "Cancelled";
+  createdAt: string;
+  cashier: string;
+};
+
+export type StockAlert = {
+  id: string;
+  item: string;
+  remaining: number;
+  unit: string;
+  reportedBy: string;
+  createdAt: string;
+};
+
 export type Transaction = {
   id: string;
   invoice: string;
