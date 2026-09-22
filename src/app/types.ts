@@ -8,7 +8,8 @@ export type Page =
   | "tracking"
   | "wallet"
   | "settings"
-  | "profile";
+  | "profile"
+  | "kitchen";
 
 export type Food = {
   id: number;
